@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
 )
 
 from ui.pages.splash_page import SplashPage
+from audio.audio_manager import AudioManager
 
 
 class MainWindow(QMainWindow):
@@ -17,7 +18,7 @@ class MainWindow(QMainWindow):
 
         self.setup_window()
         self.setup_pages()
-
+        self.audio = AudioManager()
         self.start_splash()
 
     def setup_window(self):
@@ -43,7 +44,7 @@ class MainWindow(QMainWindow):
     def setup_pages(self):
 
         self.stack = QStackedWidget()
-
+        
         self.splash_page = SplashPage()
 
         self.stack.addWidget(
@@ -174,6 +175,8 @@ class MainWindow(QMainWindow):
         self.fade_transition(
             self.home_page
         )
+
+        self.audio.play_music()
 
 
     def show_play_page(self):
