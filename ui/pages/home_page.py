@@ -1,24 +1,24 @@
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QWidget,
-    QLabel,
     QVBoxLayout,
     QHBoxLayout,
 )
 
-from ui.widgets.buttons.primary_button import PrimaryButton
-from ui.widgets.buttons.icon_button import IconButton
 from ui.widgets.starfield_widget import StarfieldWidget
-from ui.widgets.title_widget import TitleWidget
-from ui.theme.colors import Colors
-from ui.theme.fonts import Fonts
+
+from ui.widgets.home.home_header import HomeHeader
+from ui.widgets.home.play_panel import PlayPanel
+from ui.widgets.home.profile_button import ProfileButton
+from ui.widgets.home.menu_panel import MenuPanel
 
 
 class HomePage(QWidget):
 
     play_clicked = Signal()
     settings_clicked = Signal()
+    about_clicked = Signal()
+    profile_clicked = Signal()
 
     def __init__(self):
         super().__init__()
@@ -28,147 +28,76 @@ class HomePage(QWidget):
 
     def setup_ui(self):
 
-        # ==========================
-        # Background
-        # ==========================
-
         self.background = StarfieldWidget(self)
-        self.background.lower()
 
-        # ==========================
-        # Foreground
-        # ==========================
+        self.main_layout = QVBoxLayout(self)
 
-        self.content = QWidget(self)
-        self.content.setAttribute(
-            Qt.WidgetAttribute.WA_TranslucentBackground
-        )
-        self.content.setStyleSheet(
-            "background: transparent;"
-        )
-        self.content.raise_()
-
-        main_layout = QVBoxLayout(self.content)
-        main_layout.setContentsMargins(
-            60,
-            40,
-            60,
-            40,
+        self.main_layout.setContentsMargins(
+            50,
+            35,
+            50,
+            35,
         )
 
-        # ==========================
-        # Top Bar
-        # ==========================
+        self.main_layout.setSpacing(24)
 
-        top_layout = QHBoxLayout()
-        top_layout.addStretch()
+        self.header = HomeHeader()
 
-        self.settings_button = IconButton()
-        self.settings_button.setText("⚙")
-        self.settings_button.setFixedSize(52, 52)
+        self.play_panel = PlayPanel()
 
-        top_layout.addWidget(self.settings_button)
+        self.profile_button = ProfileButton()
 
-        main_layout.addLayout(top_layout)
+        self.menu_panel = MenuPanel()
 
-        main_layout.addStretch()
-
-        # ==========================
-        # Center
-        # ==========================
-
-        center_layout = QVBoxLayout()
-        center_layout.setAlignment(
-            Qt.AlignmentFlag.AlignCenter
-        )
-        center_layout.setSpacing(18)
-
-        self.title = TitleWidget()
-
-        self.subtitle = QLabel(
-            "One Universe. Every UNO."
+        self.main_layout.addWidget(
+            self.header
         )
 
-        self.subtitle.setAlignment(
-            Qt.AlignmentFlag.AlignCenter
-        )
+        self.main_layout.addStretch(2)
 
-        self.subtitle.setFont(
-            Fonts.body(15)
-        )
-
-        self.subtitle.setStyleSheet(
-            f"""
-            color: {Colors.TEXT_SECONDARY};
-            background: transparent;
-            """
-        )
-
-        self.play_button = PrimaryButton("PLAY")
-
-        self.play_button.setMinimumSize(
-            340,
-            78,
-        )
-
-        self.play_button.setMaximumWidth(
-            420,
-        )
-
-        self.play_button.setFont(
-            QFont(
-                "Segoe UI",
-                17,
-                QFont.Weight.Bold,
-            )
-        )
-
-        center_layout.addWidget(
-            self.title,
+        self.main_layout.addWidget(
+            self.play_panel,
             alignment=Qt.AlignmentFlag.AlignCenter,
         )
 
-        center_layout.addSpacing(10)
+        self.main_layout.addStretch(1)
 
-        center_layout.addWidget(
-            self.subtitle,
-            alignment=Qt.AlignmentFlag.AlignCenter,
+        bottom_layout = QHBoxLayout()
+
+        bottom_layout.setSpacing(30)
+
+        bottom_layout.addWidget(
+            self.profile_button,
+            alignment=Qt.AlignmentFlag.AlignLeft
         )
 
-        center_layout.addSpacing(45)
+        bottom_layout.addStretch()
 
-        center_layout.addWidget(
-            self.play_button,
-            alignment=Qt.AlignmentFlag.AlignCenter,
+        bottom_layout.addWidget(
+            self.menu_panel,
+            alignment=Qt.AlignmentFlag.AlignRight
         )
 
-        main_layout.addLayout(center_layout)
-
-        main_layout.addStretch()
-
-        # ==========================
-        # Version
-        # ==========================
-
-        self.version = QLabel("Version 0.1.0")
-
-        self.version.setAlignment(
-            Qt.AlignmentFlag.AlignCenter
+        self.main_layout.addLayout(
+            bottom_layout
         )
 
-        self.version.setFont(
-            Fonts.body(10)
+    def connect_signals(self):
+
+        self.play_panel.play_clicked.connect(
+            self.play_clicked.emit
         )
 
-        self.version.setStyleSheet(
-            f"""
-            color: {Colors.TEXT_SECONDARY};
-            background: transparent;
-            """
+        self.menu_panel.settings_clicked.connect(
+            self.settings_clicked.emit
         )
 
-        main_layout.addWidget(
-            self.version
+        self.menu_panel.about_clicked.connect(
+            self.about_clicked.emit
+        )
+
+        self.profile_button.profile_clicked.connect(
+            self.profile_clicked.emit
         )
 
     def resizeEvent(self, event):
@@ -177,30 +106,4 @@ class HomePage(QWidget):
             self.rect()
         )
 
-        self.content.setGeometry(
-            self.rect()
-        )
-
         super().resizeEvent(event)
-
-    def showEvent(self, event):
-
-        self.background.setGeometry(
-            self.rect()
-        )
-
-        self.content.setGeometry(
-            self.rect()
-        )
-
-        super().showEvent(event)
-
-    def connect_signals(self):
-
-        self.play_button.clicked.connect(
-            self.play_clicked.emit
-        )
-
-        self.settings_button.clicked.connect(
-            self.settings_clicked.emit
-        )

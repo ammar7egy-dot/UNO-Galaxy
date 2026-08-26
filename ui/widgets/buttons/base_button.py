@@ -3,16 +3,24 @@ from PySide6.QtCore import Qt
 
 
 class BaseButton(QPushButton):
+
     def __init__(self, text="", parent=None):
         super().__init__(text, parent)
 
         self.setup_base()
 
     def setup_base(self):
-        self.setCursor(Qt.PointingHandCursor)
+
+        self.setCursor(
+            Qt.CursorShape.PointingHandCursor
+        )
 
     def mousePressEvent(self, event):
-        self.setProperty("pressed", True)
+
+        self.setProperty(
+            "pressed",
+            True
+        )
 
         self.style().unpolish(self)
         self.style().polish(self)
@@ -20,7 +28,11 @@ class BaseButton(QPushButton):
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
-        self.setProperty("pressed", False)
+
+        self.setProperty(
+            "pressed",
+            False
+        )
 
         self.style().unpolish(self)
         self.style().polish(self)

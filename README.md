@@ -56,7 +56,7 @@ The project is designed to support multiple official UNO game variants through a
 
 Current Version:
 
-**v0.1.0** *(In Development)*
+**v0.3.0** *(In Development)*
 
 ---
 
@@ -66,11 +66,11 @@ Current Version:
 * [x] Setup Git repository
 * [x] Setup virtual environment
 * [x] Install PySide6
-* [ ] Create application window
-* [ ] Splash Screen
-* [ ] Home Page
-* [ ] Navigation System
-* [ ] Game Engine
+* [x] Create application window
+* [x] Splash Screen
+* [x] Home Page
+* [x] Navigation System
+* [x] Game Engine
 * [ ] UNO Classic
 * [ ] Additional UNO Variants
 

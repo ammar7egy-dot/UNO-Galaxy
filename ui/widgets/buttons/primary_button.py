@@ -3,6 +3,7 @@ from ui.theme.colors import Colors
 
 
 class PrimaryButton(BaseButton):
+
     def __init__(self, text="", parent=None):
         super().__init__(text, parent)
 

@@ -138,7 +138,7 @@ class SplashPage(QWidget):
 
 
         self.version = QLabel(
-            "Version 0.1.0"
+            "Version 0.2.0"
         )
 
         self.version.setAlignment(
