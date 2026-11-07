@@ -67,8 +67,8 @@ class AboutPage(QWidget):
 
         self.card_layout = QVBoxLayout(self.card)
 
-        self.version = QLabel("Version 0.2.0")
-        self.developer = QLabel("Developer: Ammar")
+        self.version = QLabel("Version 0.3.0")
+        self.developer = QLabel("Developer: EventHorizon")
 
         self.description = QLabel(
             "One Universe. Every UNO.\n\n"
