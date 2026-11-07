@@ -1,9 +1,11 @@
+
 from PySide6.QtCore import Qt, Signal
 
 from PySide6.QtWidgets import (
     QPushButton,
     QHBoxLayout,
     QLabel,
+    QSizePolicy,
 )
 
 from ui.theme.colors import Colors
@@ -14,11 +16,7 @@ class SettingsValueButton(QPushButton):
 
     clicked_value = Signal()
 
-    def __init__(
-        self,
-        value="",
-        parent=None,
-    ):
+    def __init__(self, value="", parent=None):
 
         super().__init__(parent)
 
@@ -30,25 +28,23 @@ class SettingsValueButton(QPushButton):
             self.clicked_value.emit
         )
 
-
     def setup_ui(self):
 
         self.setCursor(
             Qt.CursorShape.PointingHandCursor
         )
 
-        self.setMinimumWidth(
-            150
-        )
+        self.setMinimumWidth(90)
+        self.setMinimumHeight(36)
 
-        self.setFixedHeight(
-            42
+        self.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Fixed
         )
-
 
         self.setStyleSheet(
-            f"""
-            QPushButton {{
+            """
+            QPushButton {
 
                 background: transparent;
 
@@ -58,76 +54,55 @@ class SettingsValueButton(QPushButton):
 
                 padding: 0px 8px;
 
-            }}
+            }
 
-            QPushButton:hover {{
+            QPushButton:hover {
 
                 background: rgba(255,255,255,14);
 
-            }}
+            }
 
-            QPushButton:pressed {{
+            QPushButton:pressed {
 
                 background: rgba(255,255,255,25);
 
-            }}
+            }
             """
         )
 
+        self.layout = QHBoxLayout(self)
 
-        layout = QHBoxLayout(
-            self
+        self.layout.setContentsMargins(
+            8, 0, 8, 0
         )
-
-        layout.setContentsMargins(
-            8,
-            0,
-            8,
-            0
-        )
-
-        layout.setSpacing(
-            12
-        )
-
 
         self.value_label = QLabel(
-            self.value
-        )
-
-        self.value_label.setFont(
-            Fonts.body(14)
+            str(self.value)
         )
 
         self.value_label.setAlignment(
-            Qt.AlignmentFlag.AlignRight |
-            Qt.AlignmentFlag.AlignVCenter
+            Qt.AlignmentFlag.AlignRight
+            | Qt.AlignmentFlag.AlignVCenter
         )
 
         self.value_label.setStyleSheet(
             f"""
-            color:{Colors.TEXT_SECONDARY};
-
-            background:transparent;
+            color: {Colors.TEXT_SECONDARY};
+            background: transparent;
             """
         )
 
+        self.value_label.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Preferred
+        )
 
-        layout.addWidget(
+        self.layout.addWidget(
             self.value_label,
             1
         )
 
-
-        # Arrow
-
-        self.arrow = QLabel(
-            "❯"
-        )
-
-        self.arrow.setFont(
-            Fonts.body(16)
-        )
+        self.arrow = QLabel("❯")
 
         self.arrow.setAlignment(
             Qt.AlignmentFlag.AlignCenter
@@ -135,25 +110,68 @@ class SettingsValueButton(QPushButton):
 
         self.arrow.setStyleSheet(
             f"""
-            color:{Colors.TEXT_SECONDARY};
-
-            background:transparent;
+            color: {Colors.TEXT_SECONDARY};
+            background: transparent;
             """
         )
 
-
-        layout.addWidget(
+        self.layout.addWidget(
             self.arrow
         )
 
+        self.update_responsive_layout()
 
-    def set_value(
-        self,
-        value,
-    ):
+    # ==========================
+    # Value
+    # ==========================
+
+    def set_value(self, value):
 
         self.value = value
 
         self.value_label.setText(
-            value
+            str(value)
         )
+
+    # ==========================
+    # Responsive Layout
+    # ==========================
+
+    def update_responsive_layout(self):
+
+        width = self.width()
+
+        if width <= 110:
+            font_size = 11
+            arrow_size = 12
+            spacing = 4
+
+        elif width <= 160:
+            font_size = 12
+            arrow_size = 14
+            spacing = 8
+
+        else:
+            font_size = 14
+            arrow_size = 16
+            spacing = 12
+
+        self.value_label.setFont(
+            Fonts.body(font_size)
+        )
+
+        self.arrow.setFont(
+            Fonts.body(arrow_size)
+        )
+
+        self.layout.setSpacing(spacing)
+
+    # ==========================
+    # Resize
+    # ==========================
+
+    def resizeEvent(self, event):
+
+        super().resizeEvent(event)
+
+        self.update_responsive_layout()

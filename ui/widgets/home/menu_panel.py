@@ -1,7 +1,9 @@
+
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QFrame,
     QVBoxLayout,
+    QSizePolicy,
 )
 
 from ui.widgets.buttons.primary_button import PrimaryButton
@@ -19,7 +21,13 @@ class MenuPanel(QFrame):
 
     def setup_ui(self):
 
-        self.setFixedWidth(260)
+        self.setMinimumWidth(150)
+        self.setMaximumWidth(260)
+
+        self.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Fixed,
+        )
 
         self.setStyleSheet("""
             QFrame {
@@ -29,16 +37,13 @@ class MenuPanel(QFrame):
             }
         """)
 
-        layout = QVBoxLayout(self)
+        self.layout = QVBoxLayout(self)
 
-        layout.setContentsMargins(
-            20,
-            20,
-            20,
-            20,
+        self.layout.setContentsMargins(
+            20, 20, 20, 20
         )
 
-        layout.setSpacing(12)
+        self.layout.setSpacing(12)
 
         self.settings_button = PrimaryButton(
             "⚙ Settings"
@@ -56,7 +61,29 @@ class MenuPanel(QFrame):
             self.about_clicked.emit
         )
 
-        layout.addWidget(self.settings_button)
-        layout.addWidget(self.about_button)
+        self.layout.addWidget(self.settings_button)
+        self.layout.addWidget(self.about_button)
 
-     
+    def resizeEvent(self, event):
+
+        width = self.width()
+
+        if width <= 180:
+            margin = 10
+            spacing = 7
+
+        elif width <= 220:
+            margin = 14
+            spacing = 9
+
+        else:
+            margin = 20
+            spacing = 12
+
+        self.layout.setContentsMargins(
+            margin, margin, margin, margin
+        )
+
+        self.layout.setSpacing(spacing)
+
+        super().resizeEvent(event)

@@ -1,8 +1,9 @@
-from PySide6.QtCore import Signal
 
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
+    QSizePolicy,
 )
 
 from ui.settings.settings_item import SettingsItem
@@ -17,39 +18,37 @@ class SettingsSidebar(QWidget):
         super().__init__(parent)
 
         self.items = {}
-
         self.current_page = "General"
 
         self.setup_ui()
 
+    # ==========================
+    # UI
+    # ==========================
 
     def setup_ui(self):
 
-        layout = QVBoxLayout(self)
+        self.layout = QVBoxLayout(self)
 
-        layout.setContentsMargins(
-            0,
-            0,
-            0,
-            0
+        self.layout.setContentsMargins(
+            0, 0, 0, 0
         )
 
-        layout.setSpacing(
-            8
-        )
+        self.layout.setSpacing(8)
 
+        self.setSizePolicy(
+            QSizePolicy.Policy.Fixed,
+            QSizePolicy.Policy.Expanding,
+        )
 
         pages = [
-
             "General",
             "Audio",
             "Appearance",
             "Language",
             "Gameplay",
             "About",
-
         ]
-
 
         for page in pages:
 
@@ -59,24 +58,22 @@ class SettingsSidebar(QWidget):
                 self.change_page
             )
 
-            layout.addWidget(
-                item
-            )
+            self.layout.addWidget(item)
 
             self.items[page] = item
 
+        self.layout.addStretch()
 
-        layout.addStretch()
+        self.set_current_page("General")
 
-        self.set_current_page(
-            "General"
-        )
+    # ==========================
+    # Page Selection
+    # ==========================
 
+    def set_current_page(self, page):
 
-    def set_current_page(
-        self,
-        page,
-    ):
+        if page not in self.items:
+            return
 
         self.current_page = page
 
@@ -86,16 +83,40 @@ class SettingsSidebar(QWidget):
                 name == page
             )
 
+    def change_page(self, page):
 
-    def change_page(
-        self,
-        page,
-    ):
+        if page not in self.items:
+            return
 
-        self.set_current_page(
-            page
-        )
+        self.set_current_page(page)
 
-        self.page_changed.emit(
-            page
-        )
+        self.page_changed.emit(page)
+
+    # ==========================
+    # Responsive Layout
+    # ==========================
+
+    def update_responsive_layout(self):
+
+        height = self.height()
+
+        if height <= 500:
+            spacing = 4
+
+        elif height <= 700:
+            spacing = 6
+
+        else:
+            spacing = 8
+
+        self.layout.setSpacing(spacing)
+
+    # ==========================
+    # Resize
+    # ==========================
+
+    def resizeEvent(self, event):
+
+        super().resizeEvent(event)
+
+        self.update_responsive_layout()

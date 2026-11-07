@@ -1,3 +1,4 @@
+
 from PySide6.QtCore import QSignalBlocker
 
 from PySide6.QtWidgets import (
@@ -15,10 +16,7 @@ from game.settings_manager import SettingsManager
 
 class AudioPage(QWidget):
 
-    def __init__(
-        self,
-        parent=None,
-    ):
+    def __init__(self, parent=None):
 
         super().__init__(parent)
 
@@ -28,11 +26,11 @@ class AudioPage(QWidget):
         self.setup_ui()
         self.connect_signals()
 
+    # ==========================
+    # Audio Manager
+    # ==========================
 
-    def set_audio_manager(
-        self,
-        audio_manager,
-    ):
+    def set_audio_manager(self, audio_manager):
 
         self.audio_manager = audio_manager
 
@@ -43,44 +41,26 @@ class AudioPage(QWidget):
         else:
             volume = self.audio_manager.volume()
 
-        with QSignalBlocker(
-            self.music_slider.slider
-        ):
-            self.music_slider.setValue(
-                volume
-            )
+        with QSignalBlocker(self.music_slider.slider):
+            self.music_slider.setValue(volume)
 
-        with QSignalBlocker(
-            self.mute_switch
-        ):
-            self.mute_switch.setChecked(
-                muted
-            )
+        with QSignalBlocker(self.mute_switch):
+            self.mute_switch.setChecked(muted)
 
+    # ==========================
+    # UI
+    # ==========================
 
     def setup_ui(self):
 
-        layout = QVBoxLayout(self)
+        self.main_layout = QVBoxLayout(self)
 
-        layout.setContentsMargins(
-            0,
-            0,
-            0,
-            0,
+        self.main_layout.setContentsMargins(
+            0, 0, 0, 0
         )
 
-        layout.setSpacing(
-            24
-        )
-
-
-        # ==========================
         # Music
-        # ==========================
-
-        music_card = SettingsCard(
-            "Music"
-        )
+        self.music_card = SettingsCard("Music")
 
         volume = self.settings.get(
             "audio",
@@ -91,25 +71,19 @@ class AudioPage(QWidget):
             value=volume
         )
 
-        music_card.add_widget(
+        self.music_card.add_widget(
             SettingsRow(
                 "Music Volume",
                 self.music_slider
             )
         )
 
-        layout.addWidget(
-            music_card
+        self.main_layout.addWidget(
+            self.music_card
         )
 
-
-        # ==========================
         # Audio Options
-        # ==========================
-
-        options_card = SettingsCard(
-            "Audio Options"
-        )
+        self.options_card = SettingsCard("Audio Options")
 
         muted = self.settings.get(
             "audio",
@@ -120,19 +94,24 @@ class AudioPage(QWidget):
             muted
         )
 
-        options_card.add_widget(
+        self.options_card.add_widget(
             SettingsRow(
                 "Mute Music",
                 self.mute_switch
             )
         )
 
-        layout.addWidget(
-            options_card
+        self.main_layout.addWidget(
+            self.options_card
         )
 
-        layout.addStretch()
+        self.main_layout.addStretch()
 
+        self.update_responsive_layout()
+
+    # ==========================
+    # Signals
+    # ==========================
 
     def connect_signals(self):
 
@@ -144,113 +123,69 @@ class AudioPage(QWidget):
             self.change_mute
         )
 
+    # ==========================
+    # Volume
+    # ==========================
 
-    def change_volume(
-        self,
-        value,
-    ):
+    def change_volume(self, value):
 
         if not self.audio_manager:
             return
 
         value = int(value)
 
-        # ==========================
         # Volume = 0
-        # ==========================
-
         if value == 0:
 
-            # تفعيل الكتم تلقائياً
             if not self.audio_manager.is_muted():
 
-                self.audio_manager.mute(
-                    True
-                )
+                self.audio_manager.mute(True)
 
-            with QSignalBlocker(
-                self.mute_switch
-            ):
-
-                self.mute_switch.setChecked(
-                    True
-                )
+            with QSignalBlocker(self.mute_switch):
+                self.mute_switch.setChecked(True)
 
             return
 
-
-        # ==========================
         # Volume > 0
-        # ==========================
-
         if self.audio_manager.is_muted():
 
-            self.audio_manager.mute(
-                False
-            )
+            self.audio_manager.mute(False)
 
+        self.audio_manager.set_volume(value)
 
-        self.audio_manager.set_volume(
-            value
-        )
-
-
-        # إلغاء الكتم تلقائياً
+        # Automatically unmute
         if self.mute_switch.isChecked():
 
-            with QSignalBlocker(
-                self.mute_switch
-            ):
+            with QSignalBlocker(self.mute_switch):
+                self.mute_switch.setChecked(False)
 
-                self.mute_switch.setChecked(
-                    False
-                )
+    # ==========================
+    # Mute
+    # ==========================
 
-
-    def change_mute(
-        self,
-        checked,
-    ):
+    def change_mute(self, checked):
 
         if not self.audio_manager:
             return
 
         checked = bool(checked)
 
-
-        # ==========================
         # MUTE
-        # ==========================
-
         if checked:
 
-            self.audio_manager.mute(
-                True
-            )
+            self.audio_manager.mute(True)
 
-            with QSignalBlocker(
-                self.music_slider.slider
-            ):
+            with QSignalBlocker(self.music_slider.slider):
+                self.music_slider.setValue(0)
 
-                self.music_slider.setValue(
-                    0
-                )
-
-
-        # ==========================
         # UNMUTE
-        # ==========================
-
         else:
 
-            self.audio_manager.mute(
-                False
-            )
+            self.audio_manager.mute(False)
 
             volume = self.audio_manager.volume()
 
-            # إذا كان الصوت ما زال 0
-            # استرجع آخر مستوى محفوظ
+            # Restore last saved volume if necessary
             if volume == 0:
 
                 volume = self.settings.get(
@@ -258,15 +193,40 @@ class AudioPage(QWidget):
                     "last_music_volume"
                 )
 
-                self.audio_manager.set_volume(
-                    volume
-                )
+                self.audio_manager.set_volume(volume)
 
+            with QSignalBlocker(self.music_slider.slider):
+                self.music_slider.setValue(volume)
 
-            with QSignalBlocker(
-                self.music_slider.slider
-            ):
+    # ==========================
+    # Responsive Layout
+    # ==========================
 
-                self.music_slider.setValue(
-                    volume
-                )
+    def update_responsive_layout(self):
+
+        width = self.width()
+        height = self.height()
+
+        if width <= 500:
+            spacing = 12
+
+        elif width <= 800:
+            spacing = 16
+
+        else:
+            spacing = 24
+
+        if height <= 500:
+            spacing = min(spacing, 10)
+
+        self.main_layout.setSpacing(spacing)
+
+    # ==========================
+    # Resize
+    # ==========================
+
+    def resizeEvent(self, event):
+
+        super().resizeEvent(event)
+
+        self.update_responsive_layout()

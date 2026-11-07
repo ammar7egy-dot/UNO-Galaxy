@@ -1,8 +1,5 @@
-from PySide6.QtCore import (
-    Qt,
-    Signal,
-)
 
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QPushButton
 
 from ui.theme.colors import Colors
@@ -13,11 +10,7 @@ class SettingsItem(QPushButton):
 
     clicked_item = Signal(str)
 
-    def __init__(
-        self,
-        text,
-        parent=None,
-    ):
+    def __init__(self, text, parent=None):
 
         super().__init__(text, parent)
 
@@ -28,18 +21,18 @@ class SettingsItem(QPushButton):
             Qt.CursorShape.PointingHandCursor
         )
 
-        self.setFixedHeight(48)
-
-        self.setFont(
-            Fonts.body(15)
-        )
+        self.setMinimumHeight(38)
 
         self.clicked.connect(
             self.on_clicked
         )
 
+        self.update_responsive_style()
         self.update_style()
 
+    # ==========================
+    # Click
+    # ==========================
 
     def on_clicked(self):
 
@@ -47,91 +40,146 @@ class SettingsItem(QPushButton):
             self.page_name
         )
 
+    # ==========================
+    # Active State
+    # ==========================
 
-    def set_active(
-        self,
-        active,
-    ):
+    def set_active(self, active):
 
         self.active = active
 
         self.update_style()
 
+    # ==========================
+    # Responsive Style
+    # ==========================
 
-    def update_style(self):
+    def update_responsive_style(self):
+
+        height = self.height()
+
+        if height <= 42:
+            font_size = 11
+            left_padding = 10
+
+        elif height <= 50:
+            font_size = 13
+            left_padding = 14
+
+        else:
+            font_size = 15
+            left_padding = 18
+
+        self.setFont(
+            Fonts.body(font_size)
+        )
+
+        self.setStyleSheet(
+            self.get_style(left_padding)
+        )
+
+    # ==========================
+    # Style
+    # ==========================
+
+    def get_style(self, left_padding):
 
         if self.active:
 
-            self.setStyleSheet(
-                f"""
-                QPushButton {{
+            return f"""
+            QPushButton {{
 
-                    background: rgba(79,70,229,30);
+                background: rgba(79,70,229,30);
 
-                    color: {Colors.TEXT};
+                color: {Colors.TEXT};
 
-                    border: none;
+                border: none;
 
-                    border-left: 4px solid {Colors.PRIMARY};
+                border-left: 4px solid {Colors.PRIMARY};
 
-                    border-radius: 12px;
+                border-radius: 12px;
 
-                    text-align: left;
+                text-align: left;
 
-                    padding-left: 18px;
+                padding-left: {left_padding}px;
 
-                    font-weight: 600;
+                font-weight: 600;
 
-                }}
+            }}
 
-                QPushButton:hover {{
+            QPushButton:hover {{
 
-                    background: rgba(79,70,229,42);
+                background: rgba(79,70,229,42);
 
-                }}
+            }}
 
-                QPushButton:pressed {{
+            QPushButton:pressed {{
 
-                    background: rgba(79,70,229,54);
+                background: rgba(79,70,229,54);
 
-                }}
-                """
-            )
+            }}
+            """
+
+        return f"""
+        QPushButton {{
+
+            background: transparent;
+
+            color: {Colors.TEXT_SECONDARY};
+
+            border: none;
+
+            border-left: 4px solid transparent;
+
+            border-radius: 12px;
+
+            text-align: left;
+
+            padding-left: {left_padding}px;
+
+        }}
+
+        QPushButton:hover {{
+
+            background: rgba(255,255,255,10);
+
+            color: {Colors.TEXT};
+
+        }}
+
+        QPushButton:pressed {{
+
+            background: rgba(255,255,255,18);
+
+        }}
+        """
+
+    def update_style(self):
+
+        height = max(
+            self.height(),
+            self.minimumHeight(),
+        )
+
+        if height <= 42:
+            left_padding = 10
+
+        elif height <= 50:
+            left_padding = 14
 
         else:
+            left_padding = 18
 
-            self.setStyleSheet(
-                f"""
-                QPushButton {{
+        self.setStyleSheet(
+            self.get_style(left_padding)
+        )
 
-                    background: transparent;
+    # ==========================
+    # Resize
+    # ==========================
 
-                    color: {Colors.TEXT_SECONDARY};
+    def resizeEvent(self, event):
 
-                    border: none;
+        super().resizeEvent(event)
 
-                    border-left: 4px solid transparent;
-
-                    border-radius: 12px;
-
-                    text-align: left;
-
-                    padding-left: 18px;
-
-                }}
-
-                QPushButton:hover {{
-
-                    background: rgba(255,255,255,10);
-
-                    color: {Colors.TEXT};
-
-                }}
-
-                QPushButton:pressed {{
-
-                    background: rgba(255,255,255,18);
-
-                }}
-                """
-            )
+        self.update_responsive_style()

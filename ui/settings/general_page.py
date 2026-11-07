@@ -1,3 +1,4 @@
+
 from PySide6.QtCore import QSignalBlocker
 from PySide6.QtWidgets import (
     QWidget,
@@ -15,11 +16,7 @@ from game.settings_manager import SettingsManager
 
 class GeneralPage(QWidget):
 
-    def __init__(
-        self,
-        parent=None,
-    ):
-
+    def __init__(self, parent=None):
         super().__init__(parent)
 
         self.settings = SettingsManager()
@@ -27,137 +24,74 @@ class GeneralPage(QWidget):
         self.setup_ui()
         self.connect_signals()
 
-
     def setup_ui(self):
 
-        layout = QVBoxLayout(self)
+        self.main_layout = QVBoxLayout(self)
 
-        layout.setContentsMargins(
-            0,
-            0,
-            0,
-            0,
+        self.main_layout.setContentsMargins(
+            0, 0, 0, 0
         )
 
-        layout.setSpacing(
-            24,
-        )
-
-
-        # ==========================
         # Load Settings
-        # ==========================
-
         animations = self.settings.get(
-            "general",
-            "animations"
+            "general", "animations"
         )
 
         particles = self.settings.get(
-            "general",
-            "particles"
+            "general", "particles"
         )
 
         reduce_motion = self.settings.get(
-            "general",
-            "reduce_motion"
+            "general", "reduce_motion"
         )
 
         language = self.settings.get(
-            "general",
-            "language"
+            "general", "language"
         )
 
-        ui_scale = self.settings.get(
-            "general",
-            "ui_scale"
-        )
-
-
-        # ==========================
         # Experience
-        # ==========================
+        self.experience_card = SettingsCard("Experience")
 
-        experience_card = SettingsCard(
-            "Experience"
+        self.animations_switch = SettingsSwitch(animations)
+        self.particles_switch = SettingsSwitch(particles)
+        self.reduce_motion_switch = SettingsSwitch(reduce_motion)
+
+        self.experience_card.add_widget(
+            SettingsRow("Animations", self.animations_switch)
         )
 
-        self.animations_switch = SettingsSwitch(
-            animations
+        self.experience_card.add_widget(
+            SettingsRow("Particle Effects", self.particles_switch)
         )
 
-        self.particles_switch = SettingsSwitch(
-            particles
+        self.experience_card.add_widget(
+            SettingsRow("Reduce Motion", self.reduce_motion_switch)
         )
 
-        self.reduce_motion_switch = SettingsSwitch(
-            reduce_motion
+        self.main_layout.addWidget(
+            self.experience_card
         )
 
-
-        experience_card.add_widget(
-            SettingsRow(
-                "Animations",
-                self.animations_switch,
-            )
-        )
-
-        experience_card.add_widget(
-            SettingsRow(
-                "Particle Effects",
-                self.particles_switch,
-            )
-        )
-
-        experience_card.add_widget(
-            SettingsRow(
-                "Reduce Motion",
-                self.reduce_motion_switch,
-            )
-        )
-
-        layout.addWidget(
-            experience_card
-        )
-
-
-        # ==========================
         # Interface
-        # ==========================
+        self.interface_card = SettingsCard("Interface")
 
-        interface_card = SettingsCard(
-            "Interface"
+        self.language_button = SettingsValueButton(language)
+
+        self.interface_card.add_widget(
+            SettingsRow("Language", self.language_button)
         )
 
-        self.language_button = SettingsValueButton(
-            language
+        self.main_layout.addWidget(
+            self.interface_card
         )
 
-        self.scale_button = SettingsValueButton(
-            ui_scale
-        )
+        self.main_layout.addStretch()
 
+        self.update_responsive_layout()
 
-        interface_card.add_widget(
-            SettingsRow(
-                "Language",
-                self.language_button,
-            )
-        )
-
-        interface_card.add_widget(
-            SettingsRow(
-                "UI Scale",
-                self.scale_button
-            )
-        )
-
-        layout.addWidget(
-            interface_card
-        )
-
-        layout.addStretch()
-
+    # ==========================
+    # Signals
+    # ==========================
 
     def connect_signals(self):
 
@@ -177,50 +111,27 @@ class GeneralPage(QWidget):
             self.open_language_menu
         )
 
-        self.scale_button.clicked_value.connect(
-            self.open_scale_menu
-        )
-
-
     # ==========================
     # Experience
     # ==========================
 
-    def change_animations(
-        self,
-        enabled,
-    ):
+    def change_animations(self, enabled):
 
         self.settings.set(
-            "general",
-            "animations",
-            bool(enabled)
+            "general", "animations", bool(enabled)
         )
 
-
-    def change_particles(
-        self,
-        enabled,
-    ):
+    def change_particles(self, enabled):
 
         self.settings.set(
-            "general",
-            "particles",
-            bool(enabled)
+            "general", "particles", bool(enabled)
         )
 
-
-    def change_reduce_motion(
-        self,
-        enabled,
-    ):
+    def change_reduce_motion(self, enabled):
 
         self.settings.set(
-            "general",
-            "reduce_motion",
-            bool(enabled)
+            "general", "reduce_motion", bool(enabled)
         )
-
 
     # ==========================
     # Language
@@ -228,12 +139,9 @@ class GeneralPage(QWidget):
 
     def open_language_menu(self):
 
-        menu = QMenu(
-            self
-        )
+        menu = QMenu(self)
 
-        menu.setStyleSheet(
-            """
+        menu.setStyleSheet("""
             QMenu {
                 background-color: #1E1E1E;
                 border: 1px solid #3A3A3A;
@@ -250,18 +158,10 @@ class GeneralPage(QWidget):
             QMenu::item:selected {
                 background-color: #4F46E5;
             }
-            """
-        )
+        """)
 
-
-        english_action = menu.addAction(
-            "English"
-        )
-
-        arabic_action = menu.addAction(
-            "العربية"
-        )
-
+        english_action = menu.addAction("English")
+        arabic_action = menu.addAction("العربية")
 
         selected_action = menu.exec(
             self.language_button.mapToGlobal(
@@ -269,127 +169,19 @@ class GeneralPage(QWidget):
             )
         )
 
-
         if selected_action == english_action:
-
-            self.change_language(
-                "English"
-            )
+            self.change_language("English")
 
         elif selected_action == arabic_action:
+            self.change_language("العربية")
 
-            self.change_language(
-                "العربية"
-            )
-
-
-    def change_language(
-        self,
-        language,
-    ):
+    def change_language(self, language):
 
         self.settings.set(
-            "general",
-            "language",
-            language
+            "general", "language", language
         )
 
-        self.language_button.set_value(
-            language
-        )
-
-
-    # ==========================
-    # UI Scale
-    # ==========================
-
-    def open_scale_menu(self):
-
-        menu = QMenu(
-            self
-        )
-
-        menu.setStyleSheet(
-            """
-            QMenu {
-                background-color: #1E1E1E;
-                border: 1px solid #3A3A3A;
-                border-radius: 10px;
-                padding: 6px;
-            }
-
-            QMenu::item {
-                color: white;
-                padding: 10px 24px;
-                border-radius: 6px;
-            }
-
-            QMenu::item:selected {
-                background-color: #4F46E5;
-            }
-            """
-        )
-
-
-        scales = [
-            "80%",
-            "90%",
-            "100%",
-            "110%",
-            "125%",
-        ]
-
-
-        actions = {}
-
-        for scale in scales:
-
-            actions[
-                menu.addAction(scale)
-            ] = scale
-
-
-        selected_action = menu.exec(
-            self.scale_button.mapToGlobal(
-                self.scale_button.rect().bottomLeft()
-            )
-        )
-
-
-        if selected_action in actions:
-
-            self.change_scale(
-                actions[selected_action]
-            )
-
-
-    def change_scale(
-        self,
-        scale,
-    ):
-
-        self.settings.set(
-            "general",
-            "ui_scale",
-            scale
-        )
-
-        self.scale_button.set_value(
-            scale
-        )
-
-        # إرسال التغيير إلى MainWindow
-        window = self.window()
-
-        if hasattr(
-            window,
-            "apply_ui_scale"
-        ):
-
-            window.apply_ui_scale(
-                scale
-            )
-
+        self.language_button.set_value(language)
 
     # ==========================
     # Refresh
@@ -398,62 +190,57 @@ class GeneralPage(QWidget):
     def refresh_settings(self):
 
         animations = self.settings.get(
-            "general",
-            "animations"
+            "general", "animations"
         )
 
         particles = self.settings.get(
-            "general",
-            "particles"
+            "general", "particles"
         )
 
         reduce_motion = self.settings.get(
-            "general",
-            "reduce_motion"
+            "general", "reduce_motion"
         )
 
         language = self.settings.get(
-            "general",
-            "language"
+            "general", "language"
         )
 
-        ui_scale = self.settings.get(
-            "general",
-            "ui_scale"
-        )
+        with QSignalBlocker(self.animations_switch):
+            self.animations_switch.setChecked(animations)
 
+        with QSignalBlocker(self.particles_switch):
+            self.particles_switch.setChecked(particles)
 
-        with QSignalBlocker(
-            self.animations_switch
-        ):
+        with QSignalBlocker(self.reduce_motion_switch):
+            self.reduce_motion_switch.setChecked(reduce_motion)
 
-            self.animations_switch.setChecked(
-                animations
-            )
+        self.language_button.set_value(language)
 
+    # ==========================
+    # Responsive Layout
+    # ==========================
 
-        with QSignalBlocker(
-            self.particles_switch
-        ):
+    def update_responsive_layout(self):
 
-            self.particles_switch.setChecked(
-                particles
-            )
+        width = self.width()
+        height = self.height()
 
+        if width <= 500:
+            spacing = 12
 
-        with QSignalBlocker(
-            self.reduce_motion_switch
-        ):
+        elif width <= 800:
+            spacing = 16
 
-            self.reduce_motion_switch.setChecked(
-                reduce_motion
-            )
+        else:
+            spacing = 24
 
+        if height <= 500:
+            spacing = min(spacing, 10)
 
-        self.language_button.set_value(
-            language
-        )
+        self.main_layout.setSpacing(spacing)
 
-        self.scale_button.set_value(
-            ui_scale
-        )
+    def resizeEvent(self, event):
+
+        super().resizeEvent(event)
+
+        self.update_responsive_layout()

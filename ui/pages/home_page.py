@@ -1,3 +1,4 @@
+
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QWidget,
@@ -26,6 +27,10 @@ class HomePage(QWidget):
         self.setup_ui()
         self.connect_signals()
 
+    # ==========================
+    # UI
+    # ==========================
+
     def setup_ui(self):
 
         self.background = StarfieldWidget(self)
@@ -33,20 +38,19 @@ class HomePage(QWidget):
         self.main_layout = QVBoxLayout(self)
 
         self.main_layout.setContentsMargins(
-            50,
-            35,
-            50,
-            35,
+            50, 35, 50, 35
         )
 
         self.main_layout.setSpacing(24)
 
+        # Header
         self.header = HomeHeader()
 
+        # Main Play Panel
         self.play_panel = PlayPanel()
 
+        # Bottom Elements
         self.profile_button = ProfileButton()
-
         self.menu_panel = MenuPanel()
 
         self.main_layout.addWidget(
@@ -62,25 +66,31 @@ class HomePage(QWidget):
 
         self.main_layout.addStretch(1)
 
-        bottom_layout = QHBoxLayout()
+        self.bottom_layout = QHBoxLayout()
 
-        bottom_layout.setSpacing(30)
+        self.bottom_layout.setSpacing(30)
 
-        bottom_layout.addWidget(
+        self.bottom_layout.addWidget(
             self.profile_button,
-            alignment=Qt.AlignmentFlag.AlignLeft
+            alignment=Qt.AlignmentFlag.AlignLeft,
         )
 
-        bottom_layout.addStretch()
+        self.bottom_layout.addStretch()
 
-        bottom_layout.addWidget(
+        self.bottom_layout.addWidget(
             self.menu_panel,
-            alignment=Qt.AlignmentFlag.AlignRight
+            alignment=Qt.AlignmentFlag.AlignRight,
         )
 
         self.main_layout.addLayout(
-            bottom_layout
+            self.bottom_layout
         )
+
+        self.update_responsive_layout()
+
+    # ==========================
+    # Signals
+    # ==========================
 
     def connect_signals(self):
 
@@ -100,10 +110,57 @@ class HomePage(QWidget):
             self.profile_clicked.emit
         )
 
+    # ==========================
+    # Responsive Layout
+    # ==========================
+
+    def update_responsive_layout(self):
+
+        width = self.width()
+        height = self.height()
+
+        if width <= 900:
+            horizontal_margin = 20
+        elif width <= 1150:
+            horizontal_margin = 32
+        else:
+            horizontal_margin = 50
+
+        if height <= 550:
+            vertical_margin = 12
+            layout_spacing = 10
+        elif height <= 700:
+            vertical_margin = 22
+            layout_spacing = 16
+        else:
+            vertical_margin = 35
+            layout_spacing = 24
+
+        self.main_layout.setContentsMargins(
+            horizontal_margin,
+            vertical_margin,
+            horizontal_margin,
+            vertical_margin,
+        )
+
+        self.main_layout.setSpacing(
+            layout_spacing
+        )
+
+        self.bottom_layout.setSpacing(
+            max(10, min(30, width // 40))
+        )
+
+    # ==========================
+    # Resize
+    # ==========================
+
     def resizeEvent(self, event):
 
         self.background.setGeometry(
             self.rect()
         )
+
+        self.update_responsive_layout()
 
         super().resizeEvent(event)

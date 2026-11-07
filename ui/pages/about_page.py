@@ -1,3 +1,4 @@
+
 from PySide6.QtCore import Qt, Signal, QUrl
 from PySide6.QtGui import QFont, QDesktopServices
 from PySide6.QtWidgets import (
@@ -5,6 +6,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QVBoxLayout,
     QFrame,
+    QSizePolicy,
 )
 
 from ui.widgets.buttons.primary_button import PrimaryButton
@@ -20,121 +22,112 @@ class AboutPage(QWidget):
 
         self.setup_ui()
 
+    # ==========================
+    # UI
+    # ==========================
+
     def setup_ui(self):
 
-        layout = QVBoxLayout(self)
+        self.main_layout = QVBoxLayout(self)
 
-        layout.setAlignment(
+        self.main_layout.setAlignment(
             Qt.AlignmentFlag.AlignCenter
         )
 
-        layout.setSpacing(18)
+        self.title = QLabel("UNO! Galaxy")
 
-        title = QLabel(
-            "UNO! Galaxy"
-        )
-
-        title.setAlignment(
+        self.title.setAlignment(
             Qt.AlignmentFlag.AlignCenter
         )
 
-        title.setFont(
-            QFont(
-                "Segoe UI",
-                40,
-                QFont.Weight.Bold
-            )
-        )
-
-        title.setStyleSheet(
+        self.title.setStyleSheet(
             f"""
             color: {Colors.PRIMARY};
             """
         )
 
+        # About Card
+        self.card = QFrame()
 
-        card = QFrame()
-
-        card.setFixedWidth(
-            420
+        self.card.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Preferred
         )
 
-        card.setStyleSheet(
+        self.card.setMaximumWidth(420)
+
+        self.card.setStyleSheet(
             f"""
             QFrame {{
                 background-color: {Colors.SURFACE};
                 border-radius: 18px;
-                padding: 20px;
             }}
             """
         )
 
+        self.card_layout = QVBoxLayout(self.card)
 
-        card_layout = QVBoxLayout(card)
+        self.version = QLabel("Version 0.2.0")
+        self.developer = QLabel("Developer: Ammar")
 
-        version = QLabel(
-            "Version 0.2.0"
-        )
-
-        developer = QLabel(
-            "Developer: Ammar"
-        )
-
-        description = QLabel(
+        self.description = QLabel(
             "One Universe. Every UNO.\n\n"
             "A new UNO experience."
         )
 
-        for label in [
-            version,
-            developer,
-            description
-        ]:
+        self.card_labels = [
+            self.version,
+            self.developer,
+            self.description
+        ]
+
+        for label in self.card_labels:
+
             label.setAlignment(
                 Qt.AlignmentFlag.AlignCenter
             )
 
-            card_layout.addWidget(
-                label
-            )
+            label.setWordWrap(True)
 
+            self.card_layout.addWidget(label)
 
-        self.github_button = PrimaryButton(
-            "GitHub"
-        )
+        # GitHub Button
+        self.github_button = PrimaryButton("GitHub")
 
         self.github_button.clicked.connect(
             self.open_github
         )
 
-
-        self.back_button = PrimaryButton(
-            "← Back"
-        )
+        # Back Button
+        self.back_button = PrimaryButton("← Back")
 
         self.back_button.clicked.connect(
             self.back_clicked.emit
         )
 
+        # Main Layout
+        self.main_layout.addWidget(self.title)
 
-        layout.addWidget(
-            title
+        self.main_layout.addWidget(
+            self.card,
+            alignment=Qt.AlignmentFlag.AlignCenter
         )
 
-        layout.addWidget(
-            card
-        )
-
-        layout.addWidget(
+        self.main_layout.addWidget(
             self.github_button,
             alignment=Qt.AlignmentFlag.AlignCenter
         )
 
-        layout.addWidget(
+        self.main_layout.addWidget(
             self.back_button,
             alignment=Qt.AlignmentFlag.AlignCenter
         )
 
+        self.update_responsive_layout()
+
+    # ==========================
+    # GitHub
+    # ==========================
 
     def open_github(self):
 
@@ -143,3 +136,84 @@ class AboutPage(QWidget):
                 "https://github.com/ammar7egy-dot/UNO-Galaxy"
             )
         )
+
+    # ==========================
+    # Responsive Layout
+    # ==========================
+
+    def update_responsive_layout(self):
+
+        width = self.width()
+        height = self.height()
+
+        if width <= 500:
+            title_size = 27
+            card_width = max(220, width - 48)
+            margin = 14
+            spacing = 10
+            label_size = 11
+
+        elif width <= 800:
+            title_size = 33
+            card_width = min(380, width - 60)
+            margin = 18
+            spacing = 14
+            label_size = 12
+
+        else:
+            title_size = 40
+            card_width = 420
+            margin = 22
+            spacing = 18
+            label_size = 13
+
+        if height <= 500:
+            spacing = min(spacing, 8)
+            margin = min(margin, 10)
+
+        self.title.setFont(
+            QFont(
+                "Segoe UI",
+                title_size,
+                QFont.Weight.Bold
+            )
+        )
+
+        self.card.setFixedWidth(card_width)
+
+        self.main_layout.setContentsMargins(
+            margin,
+            margin,
+            margin,
+            margin
+        )
+
+        self.main_layout.setSpacing(spacing)
+
+        self.card_layout.setContentsMargins(
+            margin,
+            margin,
+            margin,
+            margin
+        )
+
+        self.card_layout.setSpacing(spacing)
+
+        for label in self.card_labels:
+
+            label.setFont(
+                QFont(
+                    "Segoe UI",
+                    label_size
+                )
+            )
+
+    # ==========================
+    # Resize
+    # ==========================
+
+    def resizeEvent(self, event):
+
+        super().resizeEvent(event)
+
+        self.update_responsive_layout()

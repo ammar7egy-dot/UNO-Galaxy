@@ -1,8 +1,10 @@
+
 from PySide6.QtCore import (
     Qt,
     Signal,
     Property,
     QPropertyAnimation,
+    QSize,
 )
 
 from PySide6.QtGui import (
@@ -10,7 +12,10 @@ from PySide6.QtGui import (
     QPainter,
 )
 
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import (
+    QWidget,
+    QSizePolicy,
+)
 
 from ui.theme.colors import Colors
 
@@ -19,68 +24,70 @@ class SettingsSwitch(QWidget):
 
     toggled = Signal(bool)
 
-    def __init__(
-        self,
-        checked=False,
-        parent=None,
-    ):
+    def __init__(self, checked=False, parent=None):
 
         super().__init__(parent)
 
-        self._checked = checked
-        self._offset = 24 if checked else 4
+        self._checked = bool(checked)
+        self._offset = 1.0 if self._checked else 0.0
 
         self.setCursor(
             Qt.CursorShape.PointingHandCursor
         )
 
-        self.setFixedSize(
-            52,
-            30,
+        self.setMinimumSize(42, 24)
+
+        self.setSizePolicy(
+            QSizePolicy.Policy.Fixed,
+            QSizePolicy.Policy.Fixed
         )
 
         self.animation = QPropertyAnimation(
             self,
             b"offset",
-            self,
+            self
         )
 
-        self.animation.setDuration(
-            180
-        )
+        self.animation.setDuration(180)
 
+    # ==========================
+    # Size
+    # ==========================
+
+    def sizeHint(self):
+
+        return QSize(52, 30)
+
+    # ==========================
+    # Animation Property
+    # ==========================
 
     def get_offset(self):
 
         return self._offset
 
-
-    def set_offset(
-        self,
-        value,
-    ):
+    def set_offset(self, value):
 
         self._offset = value
-
         self.update()
-
 
     offset = Property(
         float,
         get_offset,
-        set_offset,
+        set_offset
     )
 
+    # ==========================
+    # Checked State
+    # ==========================
 
     def isChecked(self):
 
         return self._checked
 
+    def setChecked(self, checked):
 
-    def setChecked(
-        self,
-        checked,
-    ):
+        checked = bool(checked)
 
         if self._checked == checked:
             return
@@ -94,20 +101,18 @@ class SettingsSwitch(QWidget):
         )
 
         self.animation.setEndValue(
-            24 if checked else 4
+            1.0 if checked else 0.0
         )
 
         self.animation.start()
 
-        self.toggled.emit(
-            checked
-        )
+        self.toggled.emit(checked)
 
+    # ==========================
+    # Mouse Interaction
+    # ==========================
 
-    def mousePressEvent(
-        self,
-        event,
-    ):
+    def mousePressEvent(self, event):
 
         if event.button() == Qt.MouseButton.LeftButton:
 
@@ -115,15 +120,16 @@ class SettingsSwitch(QWidget):
                 not self._checked
             )
 
-        super().mousePressEvent(
-            event
-        )
+            event.accept()
+            return
 
+        super().mousePressEvent(event)
 
-    def paintEvent(
-        self,
-        event,
-    ):
+    # ==========================
+    # Drawing
+    # ==========================
+
+    def paintEvent(self, event):
 
         painter = QPainter(self)
 
@@ -131,7 +137,21 @@ class SettingsSwitch(QWidget):
             QPainter.RenderHint.Antialiasing
         )
 
+        width = self.width()
+        height = self.height()
 
+        knob_size = height * 0.73
+        margin = (height - knob_size) / 2
+
+        minimum_x = margin
+        maximum_x = width - knob_size - margin
+
+        knob_x = (
+            minimum_x
+            + (maximum_x - minimum_x) * self._offset
+        )
+
+        # Track
         track = QColor(
             Colors.PRIMARY
             if self._checked
@@ -142,28 +162,24 @@ class SettingsSwitch(QWidget):
             Qt.PenStyle.NoPen
         )
 
-        painter.setBrush(
-            track
-        )
+        painter.setBrush(track)
 
         painter.drawRoundedRect(
             self.rect(),
-            15,
-            15,
+            height / 2,
+            height / 2
         )
 
-
+        # Knob
         painter.setBrush(
-            QColor(
-                Colors.TEXT
-            )
+            QColor(Colors.TEXT)
         )
 
         painter.drawEllipse(
-            int(self._offset),
-            4,
-            22,
-            22,
+            int(knob_x),
+            int(margin),
+            int(knob_size),
+            int(knob_size)
         )
 
         painter.end()

@@ -1,3 +1,4 @@
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget,
@@ -17,22 +18,23 @@ class HomeHeader(QWidget):
 
         self.setup_ui()
 
+    # ==========================
+    # UI
+    # ==========================
+
     def setup_ui(self):
 
-        layout = QVBoxLayout(self)
+        self.layout = QVBoxLayout(self)
 
-        layout.setContentsMargins(
-            0,
-            20,
-            0,
-            20,
+        self.layout.setContentsMargins(
+            0, 20, 0, 20
         )
 
-        layout.setSpacing(12)
+        self.layout.setSpacing(12)
 
         self.title = TitleWidget()
 
-        layout.addWidget(
+        self.layout.addWidget(
             self.title,
             alignment=Qt.AlignmentFlag.AlignCenter,
         )
@@ -56,9 +58,53 @@ class HomeHeader(QWidget):
             """
         )
 
-        layout.addWidget(
+        self.layout.addWidget(
             self.subtitle,
             alignment=Qt.AlignmentFlag.AlignCenter,
         )
 
-        layout.addStretch()
+        self.layout.addStretch()
+
+    # ==========================
+    # Responsive Layout
+    # ==========================
+
+    def resizeEvent(self, event):
+
+        width = self.width()
+        height = self.height()
+
+        if width <= 900:
+            font_size = 12
+            spacing = 6
+            vertical_margin = 8
+
+        elif width <= 1150:
+            font_size = 13
+            spacing = 9
+            vertical_margin = 14
+
+        else:
+            font_size = 14
+            spacing = 12
+            vertical_margin = 20
+
+        if height <= 550:
+            vertical_margin = min(
+                vertical_margin, 6
+            )
+
+        self.layout.setContentsMargins(
+            0,
+            vertical_margin,
+            0,
+            vertical_margin,
+        )
+
+        self.layout.setSpacing(spacing)
+
+        self.subtitle.setFont(
+            Fonts.body(font_size)
+        )
+
+        super().resizeEvent(event)
